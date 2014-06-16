@@ -92,3 +92,17 @@ function dropWhile(pred, list) {
         return list;
     }
 }
+
+function concat(list1, list2) {
+    if (list1 === empty()) {
+        return list2;
+    }
+    return cons(head(list1), concat(tail(list1), list2));
+}
+
+function each(list, fn) {
+    while (list !== empty()) {
+        fn(head(list));
+        list = tail(list);
+    }
+}

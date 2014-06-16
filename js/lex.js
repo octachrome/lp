@@ -3,6 +3,7 @@ var Tokens = {
     MAX: 'maximise',
     SUBJECT_TO: 'subject to',
     BOUNDS: 'bounds',
+    FREE: 'free',
     END: 'end',
     PLUS: '+',
     MINUS: '-',

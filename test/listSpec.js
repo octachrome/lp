@@ -162,4 +162,21 @@ describe('lists', function () {
             expect(toArray(list)).toEqual([2, 3]);
         });
     });
+
+    describe('concat', function () {
+        it('should concatenate two empty lists', function () {
+            var list = concat(empty(), empty());
+            expect(list).toBe(empty());
+        });
+
+        it('should concatenate a simple list with an empty list', function () {
+            var list = concat(fromArgs(1), empty());
+            expect(toArray(list)).toEqual([1]);
+        });
+
+        it('should concatenate an empty list with a simple list', function () {
+            var list = concat(empty(), fromArgs(1));
+            expect(toArray(list)).toEqual([1]);
+        });
+    });
 });
