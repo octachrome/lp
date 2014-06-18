@@ -163,31 +163,12 @@ describe('parser', function () {
     describe('pApply', function () {
         it('should apply a function to a parser result', function () {
             var toks = clex(fromArray('1'));
-            var parser = pApply(parseInt, pLit('1'));
+            var parser = pApply(pLit('1'), parseInt);
             var result = parser(toks);
 
             expect(result).toEqual(fromArray([{
                 result: 1,
                 rest: empty()
-            }]));
-        });
-    });
-
-    describe('pNum', function () {
-        it('should parse a list of numbers', function () {
-            var toks = clex(fromArray('1.5 44 124'));
-            var parser = pOneOrMore(pNum);
-            var result = parser(toks);
-
-            expect(result).toEqual(fromArray([{
-                result: fromArray([1.5]),
-                rest: fromArray(['44', '124'])
-            }, {
-                result: fromArray([1.5, 44, 124]),
-                rest: empty()
-            }, {
-                result: fromArray([1.5, 44]),
-                rest: fromArray(['124'])
             }]));
         });
     });

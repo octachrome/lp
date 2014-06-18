@@ -13,9 +13,12 @@ function pLit(lit) {
     };
 }
 
-function pAlt(p1, p2) {
+function pAlt(/*p1, p2, ...*/) {
+    var parsers = arguments;
     return function (tokens) {
-        return concat(p1(tokens), p2(tokens));
+        return flatMap(function (p) {
+            return p(tokens);
+        }, fromArray(parsers));
     };
 }
 
@@ -75,7 +78,7 @@ function pSat(predicate) {
     }
 }
 
-function pApply(fn, p) {
+function pApply(p, fn) {
     return function (tokens) {
         var results = p(tokens);
         return map(function (result) {
@@ -87,4 +90,6 @@ function pApply(fn, p) {
     }
 }
 
-var pNum = pApply(parseFloat, pSat(isNum));
+function pMaybe(p) {
+    return pAlt(p, pEmpty());
+}

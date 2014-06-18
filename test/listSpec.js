@@ -179,4 +179,18 @@ describe('lists', function () {
             expect(toArray(list)).toEqual([1]);
         });
     });
+
+    describe('map', function () {
+        it('should map over an empty list', function () {
+            var list = map(null, empty());
+            expect(list).toBe(empty());
+        });
+
+        it('should map over several items', function () {
+            var src = fromArray([1, 2, 3, 4]);
+            var fn = partial(eq, 2);
+            var list = map(fn, src);
+            expect(toArray(list)).toEqual([false, true, false, false]);
+        });
+    });
 });

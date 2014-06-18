@@ -108,9 +108,18 @@ function each(list, fn) {
 }
 
 function map(fn, list) {
+    if (list == empty()) {
+        return empty();
+    }
+    var h = head(list);
+    var t = tail(list);
+    return cons(fn(h), map(fn, t));
+}
+
+function flatMap(fn, list) {
     var results = empty();
     each(list, function (h) {
-        results = cons(fn(h), results);
+        results = concat(results, fn(h));
     });
     return results;
 }

@@ -45,19 +45,19 @@ function inv(f) {
 }
 
 function isWhitespace(c) {
-    return c === ' ' || c === '\t' || c === '\n';
+    return c[0] === ' ' || c[0] === '\t' || c[0] === '\n';
 }
 
 function isNum(c) {
-    return c >= '0' && c <= '9';
+    return c[0] >= '0' && c[0] <= '9';
 }
 
 function isNumOrDot(c) {
-    return c >= '0' && c <= '9' || c == '.';
+    return c[0] >= '0' && c[0] <= '9' || c[0] == '.';
 }
 
 function isAlpha(c) {
-    return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
+    return c[0] >= 'a' && c[0] <= 'z' || c[0] >= 'A' && c[0] <= 'Z';
 }
 
 function isIdChar(c) {
@@ -69,5 +69,16 @@ function partial(fn, others) {
     return function () {
         var args = Array.prototype.slice.call(arguments);
         return fn.apply(null, bound.concat(args));
+    }
+}
+
+function nth(n, list) {
+    if (list === empty()) {
+        throw new Error('Index out of bounds in nth');
+    }
+    if (n == 0) {
+        return head(list);
+    } else {
+        return nth(n - 1, tail(list));
     }
 }
