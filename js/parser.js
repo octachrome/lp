@@ -57,3 +57,34 @@ function pOneOrMore(p) {
         return pZeroOrMore(p)(tokens);
     });
 }
+
+function pSat(predicate) {
+    return function (tokens) {
+        if (tokens === empty()) {
+            return empty();
+        }
+        var h = head(tokens);
+        if (predicate(h)) {
+            return cons({
+                result: h,
+                rest: tail(tokens)
+            });
+        } else {
+            return empty();
+        }
+    }
+}
+
+function pApply(fn, p) {
+    return function (tokens) {
+        var results = p(tokens);
+        return map(function (result) {
+            return {
+                result: fn(result.result),
+                rest: result.rest
+            }
+        }, results);
+    }
+}
+
+var pNum = pApply(parseFloat, pSat(isNum));

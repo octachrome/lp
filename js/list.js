@@ -106,3 +106,11 @@ function each(list, fn) {
         list = tail(list);
     }
 }
+
+function map(fn, list) {
+    var results = empty();
+    each(list, function (h) {
+        results = cons(fn(h), results);
+    });
+    return results;
+}

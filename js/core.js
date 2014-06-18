@@ -52,6 +52,10 @@ function isNum(c) {
     return c >= '0' && c <= '9';
 }
 
+function isNumOrDot(c) {
+    return c >= '0' && c <= '9' || c == '.';
+}
+
 function isAlpha(c) {
     return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
 }

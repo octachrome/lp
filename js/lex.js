@@ -29,8 +29,8 @@ function clex(charList) {
         return clex(tail(charList));
     }
     if (isNum(h)) {
-        var n = takeWhile(isNum, charList);
-        var rest = dropWhile(isNum, charList);
+        var n = takeWhile(isNumOrDot, charList);
+        var rest = dropWhile(isNumOrDot, charList);
         return cons(toString(n), clex(rest));
     }
     if (isAlpha(h)) {
