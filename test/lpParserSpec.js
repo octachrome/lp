@@ -30,7 +30,7 @@ describe('lp parser', function () {
             expect(result).toEqual(fromArray([{
                 result: {
                     sym: 'x',
-                    coeff: -1.4
+                    coef: -1.4
                 },
                 rest: empty()
             }]));
@@ -43,14 +43,14 @@ describe('lp parser', function () {
             expect(result).toEqual(fromArray([{
                 result: {
                     sym: 'y',
-                    coeff: 99
+                    coef: 99
                 },
                 rest: empty()
             }]));
         });
 
         it('should parse a sequence of signed terms', function () {
-            var toks = clex(fromArray('-1.4x + 99y - 2 z'));
+            var toks = clex(fromArray('-1.4x + y - 2 z'));
             var result = pExpr(toks);
 
             // three different ways to consume one or more terms
@@ -60,13 +60,13 @@ describe('lp parser', function () {
             expect(r).toEqual({
                 result: fromArray([{
                     sym: 'x',
-                    coeff: -1.4
+                    coef: -1.4
                 },{
                     sym: 'y',
-                    coeff: 99
+                    coef: 1
                 },{
                     sym: 'z',
-                    coeff: -2
+                    coef: -2
                 }]),
                 rest: empty()
             });
