@@ -28,6 +28,14 @@ function mkConstraint(expr, op, rhs) {
     };
 }
 
+function nameConstraint(name, colon, c) {
+    return {
+        name: name,
+        expr: c.expr,
+        op: c.op,
+        rhs: c.rhs
+    };
+}
 
 function createLpParser() {
     exports.pNum = pApply(pSat(isNum), parseFloat);
@@ -46,5 +54,7 @@ function createLpParser() {
     exports.pSignedNum = pThen(mul, pSign, pNum);
 
     exports.pIneq = pAlt(pLit(Tokens.LE), pLit(Tokens.GE));
-    exports.pConstraint = pThen3(mkConstraint, pExpr, pIneq, pAlt(pNum, pSignedNum));
+    exports.pAnonConstraint = pThen3(mkConstraint, pExpr, pIneq, pAlt(pNum, pSignedNum));
+    exports.pNamedConstraint = pThen3(nameConstraint, pSat(isAlpha), pLit(Tokens.COLON), pAnonConstraint);
+    exports.pConstraint = pAlt(pAnonConstraint, pNamedConstraint);
 }

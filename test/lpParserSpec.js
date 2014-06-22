@@ -111,5 +111,16 @@ describe('lp parser', function () {
                 rhs: -4
             });
         });
+
+        it('should parse a named constraint', function () {
+            var toks = clex(fromArray('cons1: 12 var1 - var2 >= -4'));
+            var result = pConstraint(toks);
+            expect(takeFirstParse(result)).toEqual({
+                name: 'cons1',
+                expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
+                op: '>=',
+                rhs: -4
+            });
+        });
     });
 });
