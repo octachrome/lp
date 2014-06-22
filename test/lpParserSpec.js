@@ -122,5 +122,65 @@ describe('lp parser', function () {
                 rhs: -4
             });
         });
+
+        it('should parse an objective function', function () {
+            var toks = clex(fromArray(
+                "minimise\n\
+                12 var1 - var2"
+            ));
+            var result = pObjective(toks);
+            expect(takeFirstParse(result)).toEqual({
+                dir: 'minimise',
+                expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}]
+            });
+        });
+
+        it('should parse a set of constraints', function () {
+            var toks = clex(fromArray(
+                "subject to\n\
+                12 var1 - var2 <= -30\n\
+                c: var1 + var2 >= 3\n"
+            ));
+            var result = pConstraints(toks);
+            expect(takeFirstParse(result)).toEqual([{
+                expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
+                op: '<=',
+                rhs: -30
+            }, {
+                name: 'c',
+                expr: [{sym: 'var1', coef: 1}, {sym: 'var2', coef: 1}],
+                op: '>=',
+                rhs: 3
+            }]);
+        });
+
+        it('should parse an lp problem', function () {
+            var toks = clex(fromArray(
+                "maximise\n\
+                x + y\n\
+                subject to\n\
+                a: 3x - y >= 10\n\
+                b: 2z + 50y <= 100\n\
+                end\n"
+            ));
+            var result = pLp(toks);
+            expect(takeFirstParse(result)).toEqual({
+                objective: {
+                    dir: 'maximise',
+                    expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: 1}]
+                },
+                constraints: [{
+                    name: 'a',
+                    expr: [{sym: 'x', coef: 3}, {sym: 'y', coef: -1}],
+                    op: '>=',
+                    rhs: 10
+                }, {
+                    name: 'b',
+                    expr: [{sym: 'z', coef: 2}, {sym: 'y', coef: 50}],
+                    op: '<=',
+                    rhs: 100
+                }]
+            });
+        });
     });
 });

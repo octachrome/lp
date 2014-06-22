@@ -37,6 +37,24 @@ function nameConstraint(name, colon, c) {
     };
 }
 
+function mkObjective(dir, expr) {
+    return {
+        dir: dir,
+        expr: toArray(expr)
+    };
+}
+
+function mkConstraints(st, constraints) {
+    return toArray(constraints);
+}
+
+function mkLp(objective, constraints) {
+    return {
+        objective: objective,
+        constraints: constraints
+    };
+}
+
 function createLpParser() {
     exports.pNum = pApply(pSat(isNum), parseFloat);
     exports.pSym = pApply(pSat(isAlpha), mkTerm);
@@ -57,4 +75,11 @@ function createLpParser() {
     exports.pAnonConstraint = pThen3(mkConstraint, pExpr, pIneq, pAlt(pNum, pSignedNum));
     exports.pNamedConstraint = pThen3(nameConstraint, pSat(isAlpha), pLit(Tokens.COLON), pAnonConstraint);
     exports.pConstraint = pAlt(pAnonConstraint, pNamedConstraint);
+
+    exports.pDirection = pAlt(pLit(Tokens.MIN), pLit(Tokens.MAX));
+    exports.pObjective = pThen(mkObjective, pDirection, pExpr);
+
+    exports.pConstraints = pThen(mkConstraints, pLit(Tokens.SUBJECT_TO), pOneOrMore(pConstraint));
+
+    exports.pLp = pThen3(mkLp, pObjective, pConstraints, pLit(Tokens.END));
 }
