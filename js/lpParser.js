@@ -31,5 +31,6 @@ function createLpParser() {
     exports.pOp = pAlt(pPlus, pMinus);
 
     exports.pSignedTerm = pThen(applyCoef, pOp, pTerm);
-    exports.pExpr = pOneOrMore(pSignedTerm);
+    exports.pInitialTerm = pAlt(pTerm, pSignedTerm);
+    exports.pExpr = pThen(cons, pInitialTerm, pZeroOrMore(pSignedTerm));
 }

@@ -71,5 +71,28 @@ describe('lp parser', function () {
                 rest: empty()
             });
         });
+
+        it('should parse an expression without an initial sign', function () {
+            var toks = clex(fromArray('1.4x + y - 2 z'));
+            var result = pExpr(toks);
+
+            // three different ways to consume one or more terms
+            expect(length(result)).toBe(3);
+
+            var r = nth(1, result);
+            expect(r).toEqual({
+                result: fromArray([{
+                    sym: 'x',
+                    coef: 1.4
+                },{
+                    sym: 'y',
+                    coef: 1
+                },{
+                    sym: 'z',
+                    coef: -2
+                }]),
+                rest: empty()
+            });
+        });
     });
 });
