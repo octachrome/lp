@@ -20,6 +20,15 @@ function applyCoef(coef, term) {
     };
 }
 
+function mkConstraint(expr, op, rhs) {
+    return {
+        expr: toArray(expr),
+        op: op,
+        rhs: rhs
+    };
+}
+
+
 function createLpParser() {
     exports.pNum = pApply(pSat(isNum), parseFloat);
     exports.pSym = pApply(pSat(isAlpha), mkTerm);
@@ -28,9 +37,14 @@ function createLpParser() {
 
     exports.pPlus = pApply(pLit(Tokens.PLUS), ret(1));
     exports.pMinus = pApply(pLit(Tokens.MINUS), ret(-1));
-    exports.pOp = pAlt(pPlus, pMinus);
+    exports.pSign = pAlt(pPlus, pMinus);
 
-    exports.pSignedTerm = pThen(applyCoef, pOp, pTerm);
+    exports.pSignedTerm = pThen(applyCoef, pSign, pTerm);
     exports.pInitialTerm = pAlt(pTerm, pSignedTerm);
     exports.pExpr = pThen(cons, pInitialTerm, pZeroOrMore(pSignedTerm));
+
+    exports.pSignedNum = pThen(mul, pSign, pNum);
+
+    exports.pIneq = pAlt(pLit(Tokens.LE), pLit(Tokens.GE));
+    exports.pConstraint = pThen3(mkConstraint, pExpr, pIneq, pAlt(pNum, pSignedNum));
 }

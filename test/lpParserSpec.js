@@ -79,19 +79,36 @@ describe('lp parser', function () {
             // three different ways to consume one or more terms
             expect(length(result)).toBe(3);
 
-            var r = nth(1, result);
-            expect(r).toEqual({
-                result: fromArray([{
-                    sym: 'x',
-                    coef: 1.4
-                },{
-                    sym: 'y',
-                    coef: 1
-                },{
-                    sym: 'z',
-                    coef: -2
-                }]),
-                rest: empty()
+            var r = takeFirstParse(result);
+            expect(r).toEqual(fromArray([{
+                sym: 'x',
+                coef: 1.4
+            },{
+                sym: 'y',
+                coef: 1
+            },{
+                sym: 'z',
+                coef: -2
+            }]));
+        });
+
+        it('should parse a constraint', function () {
+            var toks = clex(fromArray('12 var1 - var2 >= 4'));
+            var result = pConstraint(toks);
+            expect(takeFirstParse(result)).toEqual({
+                expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
+                op: '>=',
+                rhs: 4
+            });
+        });
+
+        it('should parse a constraint with a signed rhs', function () {
+            var toks = clex(fromArray('12 var1 - var2 >= -4'));
+            var result = pConstraint(toks);
+            expect(takeFirstParse(result)).toEqual({
+                expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
+                op: '>=',
+                rhs: -4
             });
         });
     });

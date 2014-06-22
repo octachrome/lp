@@ -41,6 +41,29 @@ function pThen(combine, p1, p2) {
     };
 }
 
+function pThen3(combine, p1, p2, p3) {
+    return function (tokens) {
+        var results1 = p1(tokens);
+        var results = empty();
+
+        each(results1, function (r1) {
+            var results2 = p2(r1.rest);
+
+            each(results2, function (r2) {
+                var results3 = p3(r2.rest);
+
+                each(results3, function (r3) {
+                    results = cons({
+                        result: combine(r1.result, r2.result, r3.result),
+                        rest: r3.rest
+                    }, results);
+                });
+            });
+        });
+        return results;
+    };
+}
+
 function pEmpty(result) {
     return function (tokens) {
         return cons({
@@ -92,4 +115,15 @@ function pApply(p, fn) {
 
 function pMaybe(p) {
     return pAlt(p, pEmpty());
+}
+
+function takeFirstParse(parses) {
+    if (parses === empty()) {
+        throw new Error('Syntax error');
+    }
+    var h = head(parses);
+    if (h.rest === empty()) {
+        return h.result;
+    }
+    return takeFirstParse(tail(parses));
 }
