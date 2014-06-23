@@ -10,11 +10,13 @@ function canonical(prob) {
 
     var objective = prob.objective;
     if (objective) {
-        if (objective.dir === 'minimise') {
-            objective.dir = 'maximise';
-            objective.originalDir = 'minimise';
+        if (objective.dir === 'maximise') {
             negateExpr(objective.expr);
         }
+        objective.expr.push({
+            sym: '_obj',
+            coef: 1
+        });
     }
 
     var constraints = prob.constraints;
@@ -61,32 +63,42 @@ function toMatrix(prob) {
         rhs: []
     };
 
+    function addRow(expr) {
+        var row = [];
+        matrix.rows.push(row);
+
+        for (var j = 0; j < expr.length; j++) {
+            var term = expr[j];
+            if (!(term.sym in varIndices)) {
+                var idx = nextIndex++;
+                varIndices[term.sym] = idx;
+                matrix.vars.push(term.sym);
+            } else {
+                idx = varIndices[term.sym];
+            }
+            row[idx] = term.coef;
+        }
+        return row;
+    }
+
     var constraints = prob.constraints;
     if (constraints) {
         for (var i = 0; i < constraints.length; i++) {
             var constraint = constraints[i];
-            var expr = constraint.expr;
-            var row = [];
-            matrix.rows.push(row);
+            addRow(constraint.expr);
             matrix.rhs.push(constraint.rhs);
-
-            for (var j = 0; j < expr.length; j++) {
-                var term = expr[j];
-                if (!(term.sym in varIndices)) {
-                    var idx = nextIndex++;
-                    varIndices[term.sym] = idx;
-                    matrix.vars.push(term.sym);
-                } else {
-                    idx = varIndices[term.sym];
-                }
-                row[idx] = term.coef;
-            }
         }
     }
 
-    for (var i = 0; i < matrix.rows.length; i++) {
+    var objective = prob.objective;
+    if (objective) {
+        var row = addRow(objective.expr);
+        matrix.rhs.push(0);
+    }
+
+    for (i = 0; i < matrix.rows.length; i++) {
         var row = matrix.rows[i];
-        for (var j = 0; j < nextIndex; j++) {
+        for (j = 0; j < nextIndex; j++) {
             if (!row[j]) {
                 row[j] = 0;
             }

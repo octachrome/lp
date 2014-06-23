@@ -135,7 +135,25 @@ describe('preproc', function () {
             });
         });
 
-        it('should convert a minimisation problem to a minimisation problem', function () {
+        it('should nomalise the objective function for a maximisation problem', function () {
+            var prob = {
+                objective: {
+                    dir: 'maximise',
+                    expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: -1}]
+                }
+            };
+
+            var can = canonical(prob);
+
+            expect(can).toEqual({
+                objective: {
+                    dir: 'maximise',
+                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: 1}, {sym: '_obj', coef: 1}]
+                }
+            });
+        });
+
+        it('should nomalise the objective function for a minimisation problem', function () {
             var prob = {
                 objective: {
                     dir: 'minimise',
@@ -147,9 +165,8 @@ describe('preproc', function () {
 
             expect(can).toEqual({
                 objective: {
-                    dir: 'maximise',
-                    originalDir: 'minimise',
-                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: 1}]
+                    dir: 'minimise',
+                    expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: -1}, {sym: '_obj', coef: 1}]
                 }
             });
         });
@@ -210,6 +227,27 @@ describe('preproc', function () {
                     [0, -2, 0, 3, -1]
                 ],
                 rhs: [14, 1]
+            });
+        });
+
+        it('should convert the objective to a matrix row', function () {
+            var prob = {
+                objective: {
+                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: -2}, {sym: '_obj', coef: 1}],
+                    dir: 'minimise'
+                }
+            };
+
+            var mat = toMatrix(prob);
+
+            expect(mat).toEqual({
+                vars: [
+                    'x', 'y', '_obj'
+                ],
+                rows: [
+                    [-1, -2, 1]
+                ],
+                rhs: [0]
             });
         });
     });
