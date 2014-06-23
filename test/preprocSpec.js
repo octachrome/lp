@@ -148,7 +148,8 @@ describe('preproc', function () {
             expect(can).toEqual({
                 objective: {
                     dir: 'maximise',
-                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: 1}, {sym: '_obj', coef: 1}]
+                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: 1}, {sym: '_obj', coef: 1}],
+                    objVar: '_obj'
                 }
             });
         });
@@ -166,7 +167,8 @@ describe('preproc', function () {
             expect(can).toEqual({
                 objective: {
                     dir: 'minimise',
-                    expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: -1}, {sym: '_obj', coef: 1}]
+                    expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: -1}, {sym: '_obj', coef: 1}],
+                    objVar: '_obj'
                 }
             });
         });
@@ -187,15 +189,11 @@ describe('preproc', function () {
 
             var mat = toMatrix(prob);
 
-            expect(mat).toEqual({
-                vars: [
-                    'x', 'y', '_s0'
-                ],
-                rows: [
-                    [1, 2, 3]
-                ],
-                rhs: [14]
-            });
+            expect(mat.vars).toEqual(['x', 'y', '_s0']);
+            expect(mat.rows).toEqual([
+                [1, 2, 3]
+            ]);
+            expect(mat.rhs).toEqual([14]);
         });
 
         it('should convert several constraints to a matrix', function () {
@@ -218,16 +216,12 @@ describe('preproc', function () {
 
             var mat = toMatrix(prob);
 
-            expect(mat).toEqual({
-                vars: [
-                    'x', 'y', '_s0', 'a', '_s1'
-                ],
-                rows: [
-                    [1,  2, 3, 0,  0],
-                    [0, -2, 0, 3, -1]
-                ],
-                rhs: [14, 1]
-            });
+            expect(mat.vars).toEqual(['x', 'y', '_s0', 'a', '_s1']);
+            expect(mat.rows).toEqual([
+                [1,  2, 3, 0,  0],
+                [0, -2, 0, 3, -1]
+            ]);
+            expect(mat.rhs).toEqual([14, 1]);
         });
 
         it('should convert the objective to a matrix row', function () {
@@ -240,15 +234,11 @@ describe('preproc', function () {
 
             var mat = toMatrix(prob);
 
-            expect(mat).toEqual({
-                vars: [
-                    'x', 'y', '_obj'
-                ],
-                rows: [
-                    [-1, -2, 1]
-                ],
-                rhs: [0]
-            });
+            expect(mat.vars).toEqual(['x', 'y', '_obj']);
+            expect(mat.rows).toEqual([
+                [-1, -2, 1]
+            ]);
+            expect(mat.rhs).toEqual([0]);
         });
     });
 });

@@ -17,6 +17,7 @@ function canonical(prob) {
             sym: '_obj',
             coef: 1
         });
+        objective.objVar = '_obj';
     }
 
     var constraints = prob.constraints;
@@ -53,14 +54,23 @@ function canonical(prob) {
     return prob;
 }
 
+function getByVar(colIdx, sym) {
+    if (!(sym in this.varIndices)) {
+        throw new Error('Unknown variable ' + sym);
+    }
+    return this.rows[colIdx][this.varIndices[sym]];
+}
+
 function toMatrix(prob) {
     var nextIndex = 0;
     var varIndices = {};
 
     var matrix = {
         vars: [],
+        varIndices: varIndices,
         rows: [],
-        rhs: []
+        rhs: [],
+        getByVar: getByVar
     };
 
     function addRow(expr) {
