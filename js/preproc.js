@@ -12,6 +12,7 @@ function canonical(prob) {
     if (objective) {
         if (objective.dir === 'minimise') {
             objective.dir = 'maximise';
+            objective.originalDir = 'minimise';
             negateExpr(objective.expr);
         }
     }

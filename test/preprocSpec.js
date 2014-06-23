@@ -148,6 +148,7 @@ describe('preproc', function () {
             expect(can).toEqual({
                 objective: {
                     dir: 'maximise',
+                    originalDir: 'minimise',
                     expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: 1}]
                 }
             });
