@@ -50,3 +50,48 @@ function canonical(prob) {
     }
     return prob;
 }
+
+function toMatrix(prob) {
+    var nextIndex = 0;
+    var varIndices = {};
+
+    var matrix = {
+        vars: [],
+        rows: [],
+        rhs: []
+    };
+
+    var constraints = prob.constraints;
+    if (constraints) {
+        for (var i = 0; i < constraints.length; i++) {
+            var constraint = constraints[i];
+            var expr = constraint.expr;
+            var row = [];
+            matrix.rows.push(row);
+            matrix.rhs.push(constraint.rhs);
+
+            for (var j = 0; j < expr.length; j++) {
+                var term = expr[j];
+                if (!(term.sym in varIndices)) {
+                    var idx = nextIndex++;
+                    varIndices[term.sym] = idx;
+                    matrix.vars.push(term.sym);
+                } else {
+                    idx = varIndices[term.sym];
+                }
+                row[idx] = term.coef;
+            }
+        }
+    }
+
+    for (var i = 0; i < matrix.rows.length; i++) {
+        var row = matrix.rows[i];
+        for (var j = 0; j < nextIndex; j++) {
+            if (!row[j]) {
+                row[j] = 0;
+            }
+        }
+    }
+
+    return matrix;
+}

@@ -154,4 +154,63 @@ describe('preproc', function () {
             });
         });
     });
+
+    describe('toMatrix', function () {
+        it('should convert a constraint to a matrix', function () {
+            var prob = {
+                constraints: [
+                    {
+                        expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: 2}, {sym: '_s0', coef: 3}],
+                        op: '=',
+                        rhs: 14,
+                        slackVar: '_s0'
+                    }
+                ]
+            };
+
+            var mat = toMatrix(prob);
+
+            expect(mat).toEqual({
+                vars: [
+                    'x', 'y', '_s0'
+                ],
+                rows: [
+                    [1, 2, 3]
+                ],
+                rhs: [14]
+            });
+        });
+
+        it('should convert several constraints to a matrix', function () {
+            var prob = {
+                constraints: [
+                    {
+                        expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: 2}, {sym: '_s0', coef: 3}],
+                        op: '=',
+                        rhs: 14,
+                        slackVar: '_s0'
+                    },
+                    {
+                        expr: [{sym: 'a', coef: 3}, {sym: 'y', coef: -2}, {sym: '_s1', coef: -1}],
+                        op: '=',
+                        rhs: 1,
+                        slackVar: '_s1'
+                    }
+                ]
+            };
+
+            var mat = toMatrix(prob);
+
+            expect(mat).toEqual({
+                vars: [
+                    'x', 'y', '_s0', 'a', '_s1'
+                ],
+                rows: [
+                    [1,  2, 3, 0,  0],
+                    [0, -2, 0, 3, -1]
+                ],
+                rhs: [14, 1]
+            });
+        });
+    });
 });
