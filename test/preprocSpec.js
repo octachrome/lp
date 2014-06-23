@@ -109,5 +109,48 @@ describe('preproc', function () {
                 ]
             });
         });
+
+        it('should convert a constraint with a negative rhs into one with a positive rhs', function () {
+            var prob = {
+                constraints: [
+                    {
+                        expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: 1}],
+                        op: '<=',
+                        rhs: -14
+                    }
+                ]
+            };
+
+            var can = canonical(prob);
+
+            expect(can).toEqual({
+                constraints: [
+                    {
+                        expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: -1}, {sym: '_s0', coef: -1}],
+                        op: '=',
+                        rhs: 14,
+                        slackVar: '_s0'
+                    }
+                ]
+            });
+        });
+
+        it('should convert a minimisation problem to a minimisation problem', function () {
+            var prob = {
+                objective: {
+                    dir: 'minimise',
+                    expr: [{sym: 'x', coef: 1}, {sym: 'y', coef: -1}]
+                }
+            };
+
+            var can = canonical(prob);
+
+            expect(can).toEqual({
+                objective: {
+                    dir: 'maximise',
+                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: 1}]
+                }
+            });
+        });
     });
 });
