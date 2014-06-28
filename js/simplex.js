@@ -54,3 +54,55 @@ function pivotRow(mat, pivotVar) {
 
     return index;
 }
+
+function augmentedRow(mat, idx) {
+    return mat.rows[idx].concat([mat.rhs[idx]]);
+}
+
+function cloneMat(mat) {
+    var result = {
+        vars: mat.vars,
+        varIndices: mat.varIndices,
+        rows: [],
+        rhs: mat.rhs.slice()
+    };
+    for (var i = 0; i < mat.rows.length; i++) {
+        var r = mat.rows[i].slice();
+        result.rows.push(r);
+    }
+    return result;
+}
+
+function scaleRow(row, scale) {
+    for (var i = 0; i < row.length; i++) {
+        row[i] *= scale;
+    }
+}
+
+function addRow(dest, src) {
+    for (var i = 0; i < dest.length; i++) {
+        dest[i] += src[i];
+    }
+}
+
+function pivot(mat, rowIdx, colIdx) {
+    var result = cloneMat(mat);
+    var pivotRow = mat.rows[rowIdx];
+    var pivot = pivotRow[colIdx];
+
+    for (var i = 0; i < mat.rows.length; i++) {
+        if (i === rowIdx) {
+            continue;
+        }
+        var row = result.rows[i];
+        var val = row[colIdx];
+        if (val === 0) {
+            continue;
+        }
+        scaleRow(row, -pivot / val);
+        addRow(row, pivotRow);
+        result.rhs[i] = result.rhs[i] * -pivot / val + mat.rhs[rowIdx];
+    }
+
+    return result;
+}

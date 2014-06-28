@@ -109,4 +109,92 @@ describe('simplex', function () {
             expect(pr).toBe(null);
         });
     });
+
+    function isMultipleOf(actual, expected, scaleFactor) {
+        var ratio = null;
+        if (actual.length === expected.length) {
+            for (var i = 0; i < expected.length; i++) {
+                var a = actual[i];
+                var e = expected[i];
+                if (e === 0) {
+                    if (a !== 0) {
+                        return { pass: false };
+                    }
+                } else if (ratio === null) {
+                    ratio = a / e;
+                } else {
+                    var r = a / e;
+                    if (r !== ratio) {
+                        return { pass: false };
+                    }
+                }
+            }
+        }
+        return { pass: true };
+    }
+
+    describe('isMultipleOf', function () {
+        it('should pass if a row is a multiple of another', function () {
+            var result = isMultipleOf([1, 2, 3], [2, 4, 6]);
+            expect(result.pass).toBe(true);
+        });
+
+        it('should pass if a row is negative another', function () {
+            var result = isMultipleOf([1, 2, 3], [-1, -2, -3]);
+            expect(result.pass).toBe(true);
+        });
+
+        it('should fail if a row is not a multiple of another', function () {
+            var result = isMultipleOf([1, 2, 3], [3, 4, 5]);
+            expect(result.pass).toBe(false);
+        });
+
+        it('should fail if a row is a multiple of another except for actual zeros', function () {
+            var result = isMultipleOf([1, 2, 3, 0], [2, 4, 6, 8]);
+            expect(result.pass).toBe(false);
+        });
+
+        it('should fail if a row is a multiple of another except for expected zeros', function () {
+            var result = isMultipleOf([1, 2, 3, 4], [2, 4, 6, 0]);
+            expect(result.pass).toBe(false);
+        });
+    });
+
+    describe('pivot', function () {
+
+        beforeEach(function () {
+            jasmine.addMatchers({
+                toBeMultipleOf: function () {
+                    return {
+                        compare: isMultipleOf
+                    };
+                }
+            })
+        });
+
+        it('should pivot a matrix on the given variable and row', function () {
+            var mat = {
+                vars: ['x', 'y', 'z', 's', 't', 'u', 'p'],
+                rows: [
+                    [0, -3,   1,   1,   3,   0,   0],
+                    [4,  1,   0,   0,   1,   0,   0],
+                    [0,  1,   0, -10,   0,   2,   0],
+                    [0,  3,   0,   0,  -4,   0,   5]
+                ],
+                rhs: [
+                    3,
+                    10,
+                    10,
+                    15
+                ]
+            };
+
+            var pivoted = pivot(mat, 0, 4);
+
+            expect(augmentedRow(pivoted, 0)).toEqual([0,  -3,   1,   1,   3,   0,   0,   3]);
+            expect(augmentedRow(pivoted, 1)).toBeMultipleOf([12,  6,  -1,  -1,   0,   0,   0,  27]);
+            expect(augmentedRow(pivoted, 2)).toEqual([0,   1,   0, -10,   0,   2,   0,  10]);
+            expect(augmentedRow(pivoted, 3)).toBeMultipleOf([0,  -3,   4,   4,   0,   0,  15,  57]);
+        });
+    });
 });
