@@ -49,6 +49,34 @@ function solution(mat) {
     return sol;
 }
 
+function firstInfeasibility(mat) {
+    for (var c = 0; c < mat.vars.length; c++) {
+        var val = null;
+        var row = null;
+        for (var r = 0; r < mat.rows.length; r++) {
+            var coef = mat.rows[r][c];
+            if (coef != 0) {
+                if (val === null) {
+                    val = mat.rhs[r] / coef;
+                    row = r;
+                } else {
+                    val = null;
+                    break;
+                }
+            }
+        }
+        if (val < 0) {
+            return {
+                row: row,
+                col: c,
+                sym: mat.vars[c]
+            };
+        }
+    }
+
+    return null;
+}
+
 function pivotVar(mat) {
     var p = {
         sym: mat.vars[0],

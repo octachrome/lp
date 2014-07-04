@@ -220,7 +220,6 @@ describe('simplex', function () {
     });
 
     describe('pivot', function () {
-
         beforeEach(function () {
             jasmine.addMatchers({
                 toBeMultipleOf: function () {
@@ -262,9 +261,48 @@ describe('simplex', function () {
         });
     });
 
+    describe('firstInfeasibility', function () {
+        it('should return null if solution is feasible', function () {
+            var mat = {
+                vars: ['a', 'b', 'c', 'd'],
+                varIndices: {},
+                rows: [
+                    [1,  0,  4,  0],
+                    [1,  3,  0,  0],
+                    [1,  0,  0,  1],
+                    [1,  0, -8,  0]
+                ],
+                rhs: [1, 1, 1, 1]
+            };
+
+            var row = firstInfeasibility(mat);
+            expect(row).toBe(null);
+        });
+
+        it('should return the first infeasible row', function () {
+            var mat = {
+                vars: ['a', 'b', 'c', 'd'],
+                varIndices: {},
+                rows: [
+                    [1,  0,  4,  0],
+                    [1, -3,  0,  0],
+                    [1,  0,  0, -1],
+                    [1,  0, -8,  0]
+                ],
+                rhs: [1, 1, 1, 1]
+            };
+
+            var row = firstInfeasibility(mat);
+            expect(row).toEqual({
+                row: 1,
+                col: 1,
+                sym: 'b'
+            });
+        });
+    });
 
     describe('full solve', function () {
-        it('', function () {
+        it('should solve a simple problem', function () {
             var toks = clex(fromArray(
                 "maximise\n\
                 7x + 5y\n\
