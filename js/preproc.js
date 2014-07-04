@@ -54,13 +54,6 @@ function canonical(prob) {
     return prob;
 }
 
-function getByVar(colIdx, sym) {
-    if (!(sym in this.varIndices)) {
-        throw new Error('Unknown variable ' + sym);
-    }
-    return this.rows[colIdx][this.varIndices[sym]];
-}
-
 function toMatrix(prob) {
     var nextIndex = 0;
     var varIndices = {};
@@ -69,8 +62,7 @@ function toMatrix(prob) {
         vars: [],
         varIndices: varIndices,
         rows: [],
-        rhs: [],
-        getByVar: getByVar
+        rhs: []
     };
 
     function addRow(expr) {

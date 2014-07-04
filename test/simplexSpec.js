@@ -1,33 +1,92 @@
 describe('simplex', function () {
     describe('solution', function () {
-        it('should set up the initial solution', function () {
-            var prob = {
-                constraints: [
-                    {
-                        expr: [{sym: 'a', coef: 1}, {sym: 'x', coef: 1}, {sym: '_s0', coef: -1}],
-                        op: '=',
-                        rhs: 14,
-                        slackVar: '_s0'
-                    },
-                    {
-                        expr: [{sym: 'b', coef: 1}, {sym: 'y', coef: 1}, {sym: '_s1', coef: 1}],
-                        op: '=',
-                        rhs: 5,
-                        slackVar: '_s1'
-                    }
+        it('should solve for all variables', function () {
+            var mat = {
+                vars: ['x', 'y', 'z', 's', 't', 'u', 'p'],
+                rows: [
+                    [2, -3,   1,   1,   3,   0,   0],
+                    [4,  1,   0,   0,   1,   0,   0],
+                    [0,  1,   0, -10,   0,   2,   0],
+                    [0,  3,   0,   0,  -4,   0,   5]
                 ],
-                objective: {
-                    expr: [{sym: 'x', coef: -1}, {sym: 'y', coef: -1}, {sym: '_obj', coef: 1}],
-                    objVar: '_obj'
-                }
+                rhs: [
+                    3,
+                    10,
+                    10,
+                    15
+                ]
             };
 
-            var mat = toMatrix(prob);
-            var sol = solution(prob, mat);
+            var sol = solution(mat);
 
             expect(sol).toEqual({
-                '_s0': -14,
-                '_s1': 5
+                'x': 0,
+                'y': 0,
+                'z': 3,
+                's': 0,
+                't': 0,
+                'u': 5,
+                'p': 3
+            });
+        });
+
+        it('should pick the first variable when there is a choice of two for a given row', function () {
+            var mat = {
+                vars: ['x', 'y', 'z', 's', 't', 'u', 'p'],
+                rows: [
+                    [2, -3,   1,   1,   3,   0,   0],
+                    [0,  1,   0,   0,   1,   0,   0],
+                    [0,  1,   0, -10,   0,   2,   0],
+                    [0,  3,   0,   0,  -4,   0,   5]
+                ],
+                rhs: [
+                    3,
+                    10,
+                    10,
+                    15
+                ]
+            };
+
+            var sol = solution(mat);
+
+            expect(sol).toEqual({
+                'x': 1.5,
+                'y': 0,
+                'z': 0,
+                's': 0,
+                't': 0,
+                'u': 5,
+                'p': 3
+            });
+        });
+
+        it('should assign a var to zero if the column is zeroed', function () {
+            var mat = {
+                vars: ['x', 'y', 'z', 's', 't', 'u', 'p'],
+                rows: [
+                    [0, -3,   0,   1,   3,   0,   0],
+                    [0,  1,   0,   0,   1,   0,   0],
+                    [0,  1,   0, -10,   0,   2,   0],
+                    [0,  3,   0,   0,  -4,   0,   5]
+                ],
+                rhs: [
+                    3,
+                    10,
+                    10,
+                    15
+                ]
+            };
+
+            var sol = solution(mat);
+
+            expect(sol).toEqual({
+                'x': 0,
+                'y': 0,
+                'z': 0,
+                's': 0,
+                't': 0,
+                'u': 5,
+                'p': 3
             });
         });
     });
@@ -195,6 +254,43 @@ describe('simplex', function () {
             expect(augmentedRow(pivoted, 1)).toBeMultipleOf([12,  6,  -1,  -1,   0,   0,   0,  27]);
             expect(augmentedRow(pivoted, 2)).toEqual([0,   1,   0, -10,   0,   2,   0,  10]);
             expect(augmentedRow(pivoted, 3)).toBeMultipleOf([0,  -3,   4,   4,   0,   0,  15,  57]);
+
+            for (var i = 0; i < pivoted.rhs.length; i++) {
+                var rhs = pivoted.rhs[i];
+                expect(rhs).not.toBeLessThan(0);
+            }
+        });
+    });
+
+
+    describe('full solve', function () {
+        it('', function () {
+            var toks = clex(fromArray(
+                "maximise\n\
+                7x + 5y\n\
+                subject to\n\
+                2x + y <= 100\n\
+                4x + 3y <= 240\n\
+                end\n"
+            ));
+            var result = pLp(toks);
+            var prob = takeFirstParse(result);
+            var canon = canonical(prob);
+            var mat = toMatrix(canon);
+
+            while (true) {
+                var pv = pivotVar(mat);
+                if (pv === null) {
+                    break;
+                }
+                var pr = pivotRow(mat, pv);
+                mat = pivot(mat, pr, pv.index);
+            }
+
+            var sol = solution(mat);
+            expect(sol.x).toBe(30);
+            expect(sol.y).toBe(40);
+            expect(sol._obj).toBeCloseTo(410);
         });
     });
 });

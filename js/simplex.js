@@ -1,13 +1,49 @@
-function solution(prob, mat) {
+function getByVar(mat, colIdx, sym) {
+    if (!(sym in mat.varIndices)) {
+        throw new Error('Unknown variable ' + sym);
+    }
+    return mat.rows[colIdx][mat.varIndices[sym]];
+}
+
+function printMat(mat) {
+    var s = "";
+    for (var c = 0; c < mat.vars.length; c++) {
+        s += mat.vars[c] + " ";
+    }
+    s += "\n";
+    for (var r = 0; r < mat.rows.length; r++) {
+        var row = mat.rows[r];
+        for (c = 0; c < mat.vars.length; c++) {
+            s += row[c] + " ";
+        }
+        s += " : " + mat.rhs[r] + "\n";
+    }
+    return s;
+}
+
+function solution(mat) {
     var sol = {};
-    var constraints = prob.constraints;
-    if (constraints) {
-        for (var i = 0; i < constraints.length; i++) {
-            var constraint = constraints[i];
-            if (constraint.slackVar) {
-                var coef = mat.getByVar(i, constraint.slackVar);
-                sol[constraint.slackVar] = constraint.rhs / coef;
+    var usedRows = {};
+    for (var c = 0; c < mat.vars.length; c++) {
+        var val = null;
+        var row = null;
+        for (var r = 0; r < mat.rows.length; r++) {
+            var coef = mat.rows[r][c];
+            if (coef != 0) {
+                if (val === null) {
+                    val = mat.rhs[r] / coef;
+                    row = r;
+                } else {
+                    val = null;
+                    break;
+                }
             }
+        }
+        if (val !== null && !usedRows[row]) {
+            usedRows[row] = true;
+            sol[mat.vars[c]] = val;
+        } else {
+            sol[mat.vars[c]] = 0;
         }
     }
     return sol;
@@ -102,6 +138,11 @@ function pivot(mat, rowIdx, colIdx) {
         scaleRow(row, -pivot / val);
         addRow(row, pivotRow);
         result.rhs[i] = result.rhs[i] * -pivot / val + mat.rhs[rowIdx];
+
+        if (result.rhs[i] < 0) {
+            scaleRow(row, -1);
+            result.rhs[i] = -result.rhs[i];
+        }
     }
 
     return result;
