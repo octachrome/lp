@@ -9,7 +9,6 @@ a tutorial, by Simon Peyton Jones and David R Lester](http://research.microsoft.
 Limitations:
 
 - Only <= and >= constraints are supported
-- Origin must be feasible
 - Continuous variables only
 - No bounds expressions; 0 <= all vars <= infinity
 - No constants except on RHS of constraints

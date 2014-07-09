@@ -106,7 +106,7 @@ describe('simplex', function () {
             var pv = pivotVar(mat);
             expect(pv).toEqual({
                 sym: 'b',
-                index: 1
+                col: 1
             });
         });
 
@@ -143,7 +143,7 @@ describe('simplex', function () {
 
             var pv = {
                 sym: 'a',
-                index: 0
+                col: 0
             };
             var pr = pivotRow(mat, pv);
             expect(pr).toBe(2);
@@ -162,7 +162,7 @@ describe('simplex', function () {
 
             var pv = {
                 sym: 'a',
-                index: 0
+                col: 0
             };
             var pr = pivotRow(mat, pv);
             expect(pr).toBe(null);
@@ -275,8 +275,8 @@ describe('simplex', function () {
                 rhs: [1, 1, 1, 1]
             };
 
-            var row = firstInfeasibility(mat);
-            expect(row).toBe(null);
+            var inf = firstInfeasibility(mat);
+            expect(inf).toBe(null);
         });
 
         it('should return the first infeasible row', function () {
@@ -285,18 +285,18 @@ describe('simplex', function () {
                 varIndices: {},
                 rows: [
                     [1,  0,  4,  0],
-                    [1, -3,  0,  0],
+                    [1, -3,  2,  0],
                     [1,  0,  0, -1],
                     [1,  0, -8,  0]
                 ],
                 rhs: [1, 1, 1, 1]
             };
 
-            var row = firstInfeasibility(mat);
-            expect(row).toEqual({
+            var inf = firstInfeasibility(mat);
+            expect(inf).toEqual({
                 row: 1,
-                col: 1,
-                sym: 'b'
+                col: 2,
+                sym: 'c'
             });
         });
     });
@@ -322,13 +322,47 @@ describe('simplex', function () {
                     break;
                 }
                 var pr = pivotRow(mat, pv);
-                mat = pivot(mat, pr, pv.index);
+                mat = pivot(mat, pr, pv.col);
             }
 
             var sol = solution(mat);
             expect(sol.x).toBe(30);
             expect(sol.y).toBe(40);
             expect(sol._obj).toBeCloseTo(410);
+        });
+
+        it('should solve a problem which is initially infeasible', function () {
+            var toks = clex(fromArray(
+                "maximise\n\
+                2x + 3y + z\n\
+                subject to\n\
+                x + y + z <= 40\n\
+                2x + y - z >= 10\n\
+                -y + z >= 10\n\
+                end\n"
+            ));
+            var result = pLp(toks);
+            var prob = takeFirstParse(result);
+            var canon = canonical(prob);
+            var mat = toMatrix(canon);
+
+            while (true) {
+                var pv = firstInfeasibility(mat);
+                if (pv === null) {
+                    pv = pivotVar(mat);
+                }
+                if (pv === null) {
+                    break;
+                }
+                var pr = pivotRow(mat, pv);
+                mat = pivot(mat, pr, pv.col);
+            }
+
+            var sol = solution(mat);
+            expect(sol.x).toBe(10);
+            expect(sol.y).toBe(10);
+            expect(sol.z).toBe(20);
+            expect(sol._obj).toBe(70);
         });
     });
 });

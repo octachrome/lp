@@ -5,18 +5,29 @@ function getByVar(mat, colIdx, sym) {
     return mat.rows[colIdx][mat.varIndices[sym]];
 }
 
+function padValue(v) {
+    var s = '';
+    if (v < 10 && v > -10) {
+        s += ' ';
+    }
+    if (v >= 0) {
+        s += ' ';
+    }
+    return s + v;
+}
+
 function printMat(mat) {
-    var s = "";
+    var s = "\n";
     for (var c = 0; c < mat.vars.length; c++) {
-        s += mat.vars[c] + " ";
+        s += "  " + mat.vars[c] + " ";
     }
     s += "\n";
     for (var r = 0; r < mat.rows.length; r++) {
         var row = mat.rows[r];
         for (c = 0; c < mat.vars.length; c++) {
-            s += row[c] + " ";
+            s += padValue(row[c]) + " ";
         }
-        s += " : " + mat.rhs[r] + "\n";
+        s += " : " + padValue(mat.rhs[r]) + "\n";
     }
     return s;
 }
@@ -66,12 +77,33 @@ function firstInfeasibility(mat) {
             }
         }
         if (val < 0) {
-            return {
-                row: row,
-                col: c,
-                sym: mat.vars[c]
-            };
+            break;
+        } else {
+            row = null;
         }
+    }
+
+    if (row != null) {
+        var col = null;
+        var max = null;
+        for (c = 0; c < mat.vars.length; c++) {
+            coef = mat.rows[row][c];
+            if (coef > 0) {
+                if (max === null || coef > max) {
+                    max = coef;
+                    col = c;
+                }
+            }
+        }
+
+        if (col === null) {
+            throw new Error('Failed to find a suitable pivot var for infeasible row ' + row);
+        }
+        return {
+            row: row,
+            col: col,
+            sym: mat.vars[col]
+        };
     }
 
     return null;
@@ -80,7 +112,7 @@ function firstInfeasibility(mat) {
 function pivotVar(mat) {
     var p = {
         sym: mat.vars[0],
-        index: 0
+        col: 0
     };
     var obj = mat.rows[mat.rows.length - 1] ;
     var min = obj[0];
@@ -88,7 +120,7 @@ function pivotVar(mat) {
         if (obj[i] < min) {
             p = {
                 sym: mat.vars[i],
-                index: i
+                col: i
             }
             min = obj[i];
         }
@@ -105,7 +137,7 @@ function pivotRow(mat, pivotVar) {
     var min = null;
 
     for (var i = 0; i < mat.rows.length - 1; i++) {
-        var v = mat.rows[i][pivotVar.index];
+        var v = mat.rows[i][pivotVar.col];
         if (v <= 0) {
             continue;
         }
