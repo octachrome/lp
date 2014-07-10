@@ -1,5 +1,3 @@
-var exports = window;
-
 function ret(r) {
     return function() {
         return r;
@@ -55,6 +53,8 @@ function mkLp(objective, constraints) {
     };
 }
 
+var exports = window;
+
 function createLpParser() {
     exports.pNum = pApply(pSat(isNum), parseFloat);
     exports.pSym = pApply(pSat(isAlpha), mkTerm);
@@ -82,4 +82,10 @@ function createLpParser() {
     exports.pConstraints = pThen(mkConstraints, pLit(Tokens.SUBJECT_TO), pOneOrMore(pConstraint));
 
     exports.pLp = pThen3(mkLp, pObjective, pConstraints, pLit(Tokens.END));
+}
+
+function readProb(str) {
+    var toks = clex(fromArray(str));
+    var result = pLp(toks);
+    return takeFirstParse(result);
 }

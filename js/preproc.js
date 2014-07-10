@@ -9,7 +9,7 @@ function canonical(prob) {
     var nextSlack = 0;
 
     var objective = prob.objective;
-    if (objective) {
+    if (objective && !objective.objVar) {
         if (objective.dir === 'maximise') {
             negateExpr(objective.expr);
         }
@@ -54,7 +54,8 @@ function canonical(prob) {
     return prob;
 }
 
-function toMatrix(prob) {
+function toMatrix(origProb) {
+    var prob = canonical(origProb);
     var nextIndex = 0;
     var varIndices = {};
 

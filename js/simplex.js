@@ -207,3 +207,18 @@ function pivot(mat, rowIdx, colIdx) {
 
     return result;
 }
+
+function solve(mat) {
+    while (true) {
+        var pv = firstInfeasibility(mat);
+        if (pv === null) {
+            pv = pivotVar(mat);
+        }
+        if (pv === null) {
+            break;
+        }
+        var pr = pivotRow(mat, pv);
+        mat = pivot(mat, pr, pv.col);
+    }
+    return mat;
+}

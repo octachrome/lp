@@ -1,4 +1,8 @@
 describe('simplex', function () {
+    beforeEach(function () {
+        createLpParser();
+    });
+
     describe('solution', function () {
         it('should solve for all variables', function () {
             var mat = {
@@ -303,36 +307,25 @@ describe('simplex', function () {
 
     describe('full solve', function () {
         it('should solve a simple problem', function () {
-            var toks = clex(fromArray(
+            var prob = readProb(
                 "maximise\n\
                 7x + 5y\n\
                 subject to\n\
                 2x + y <= 100\n\
                 4x + 3y <= 240\n\
                 end\n"
-            ));
-            var result = pLp(toks);
-            var prob = takeFirstParse(result);
-            var canon = canonical(prob);
-            var mat = toMatrix(canon);
+            );
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat);
+            var sol = solution(finalMat);
 
-            while (true) {
-                var pv = pivotVar(mat);
-                if (pv === null) {
-                    break;
-                }
-                var pr = pivotRow(mat, pv);
-                mat = pivot(mat, pr, pv.col);
-            }
-
-            var sol = solution(mat);
             expect(sol.x).toBe(30);
             expect(sol.y).toBe(40);
             expect(sol._obj).toBeCloseTo(410);
         });
 
         it('should solve a problem which is initially infeasible', function () {
-            var toks = clex(fromArray(
+            var prob = readProb(
                 "maximise\n\
                 2x + 3y + z\n\
                 subject to\n\
@@ -340,29 +333,34 @@ describe('simplex', function () {
                 2x + y - z >= 10\n\
                 -y + z >= 10\n\
                 end\n"
-            ));
-            var result = pLp(toks);
-            var prob = takeFirstParse(result);
-            var canon = canonical(prob);
-            var mat = toMatrix(canon);
+            );
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat);
+            var sol = solution(finalMat);
 
-            while (true) {
-                var pv = firstInfeasibility(mat);
-                if (pv === null) {
-                    pv = pivotVar(mat);
-                }
-                if (pv === null) {
-                    break;
-                }
-                var pr = pivotRow(mat, pv);
-                mat = pivot(mat, pr, pv.col);
-            }
-
-            var sol = solution(mat);
             expect(sol.x).toBe(10);
             expect(sol.y).toBe(10);
             expect(sol.z).toBe(20);
             expect(sol._obj).toBe(70);
+        });
+
+        it('should solve a problem with an equality constraint', function () {
+            var prob = readProb(
+                "maximise\n\
+                3x - 2y\n\
+                subject to\n\
+                x + y = 100\n\
+                y >= 20\n\
+                end\n"
+            );
+
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat);
+            var sol = solution(finalMat);
+
+            expect(sol.x).toBe(80);
+            expect(sol.y).toBe(20);
+            expect(sol._obj).toBeCloseTo(200);
         });
     });
 });
