@@ -84,6 +84,17 @@ function pOneOrMore(p) {
     });
 }
 
+function pZeroOrMoreFlatten(p) {
+    return pAlt(pOneOrMoreFlatten(p), pEmpty(empty()));
+}
+
+function pOneOrMoreFlatten(p) {
+    // Second parser must be lazy to avoid eager (infinite) recursion.
+    return pThen(concat, p, function (tokens) {
+        return pZeroOrMoreFlatten(p)(tokens);
+    });
+}
+
 function pSat(predicate) {
     return function (tokens) {
         if (tokens === empty()) {
