@@ -53,39 +53,47 @@ function mkLp(objective, constraints) {
     };
 }
 
-var exports = window;
-
 function createLpParser() {
-    exports.pNum = pApply(pSat(isNum), parseFloat);
-    exports.pSym = pApply(pSat(isAlpha), mkTerm);
-    exports.pCoefSym = pThen(applyCoef, pNum, pSym);
-    exports.pTerm = pAlt(pSym, pCoefSym);
+    var pNum = pApply(pSat(isNum), parseFloat);
+    var pSym = pApply(pSat(isAlpha), mkTerm);
+    var pCoefSym = pThen(applyCoef, pNum, pSym);
+    var pTerm = pAlt(pSym, pCoefSym);
 
-    exports.pPlus = pApply(pLit(Tokens.PLUS), ret(1));
-    exports.pMinus = pApply(pLit(Tokens.MINUS), ret(-1));
-    exports.pSign = pAlt(pPlus, pMinus);
+    var pPlus = pApply(pLit(Tokens.PLUS), ret(1));
+    var pMinus = pApply(pLit(Tokens.MINUS), ret(-1));
+    var pSign = pAlt(pPlus, pMinus);
 
-    exports.pSignedTerm = pThen(applyCoef, pSign, pTerm);
-    exports.pInitialTerm = pAlt(pTerm, pSignedTerm);
-    exports.pExpr = pThen(cons, pInitialTerm, pZeroOrMore(pSignedTerm));
+    var pSignedTerm = pThen(applyCoef, pSign, pTerm);
+    var pInitialTerm = pAlt(pTerm, pSignedTerm);
+    var pExpr = pThen(cons, pInitialTerm, pZeroOrMore(pSignedTerm));
 
-    exports.pSignedNum = pThen(mul, pSign, pNum);
+    var pSignedNum = pThen(mul, pSign, pNum);
 
-    exports.pIneq = pAlt(pLit(Tokens.LE), pLit(Tokens.GE), pLit(Tokens.EQ));
-    exports.pAnonConstraint = pThen3(mkConstraint, pExpr, pIneq, pAlt(pNum, pSignedNum));
-    exports.pNamedConstraint = pThen3(nameConstraint, pSat(isAlpha), pLit(Tokens.COLON), pAnonConstraint);
-    exports.pConstraint = pAlt(pAnonConstraint, pNamedConstraint);
+    var pIneq = pAlt(pLit(Tokens.LE), pLit(Tokens.GE), pLit(Tokens.EQ));
+    var pAnonConstraint = pThen3(mkConstraint, pExpr, pIneq, pAlt(pNum, pSignedNum));
+    var pNamedConstraint = pThen3(nameConstraint, pSat(isAlpha), pLit(Tokens.COLON), pAnonConstraint);
+    var pConstraint = pAlt(pAnonConstraint, pNamedConstraint);
 
-    exports.pDirection = pAlt(pLit(Tokens.MIN), pLit(Tokens.MAX));
-    exports.pObjective = pThen(mkObjective, pDirection, pExpr);
+    var pDirection = pAlt(pLit(Tokens.MIN), pLit(Tokens.MAX));
+    var pObjective = pThen(mkObjective, pDirection, pExpr);
 
-    exports.pConstraints = pThen(mkConstraints, pLit(Tokens.SUBJECT_TO), pOneOrMore(pConstraint));
+    var pConstraints = pThen(mkConstraints, pLit(Tokens.SUBJECT_TO), pOneOrMore(pConstraint));
 
-    exports.pLp = pThen3(mkLp, pObjective, pConstraints, pLit(Tokens.END));
+    var pLp = pThen3(mkLp, pObjective, pConstraints, pLit(Tokens.END));
+
+    window.lpParser = {
+        pNum: pNum,
+        pSignedTerm: pSignedTerm,
+        pExpr: pExpr,
+        pConstraint: pConstraint,
+        pConstraints: pConstraints,
+        pObjective: pObjective,
+        pLp: pLp
+    };
 }
 
 function readProb(str) {
     var toks = clex(fromArray(str));
-    var result = pLp(toks);
+    var result = lpParser.pLp(toks);
     return takeFirstParse(result);
 }

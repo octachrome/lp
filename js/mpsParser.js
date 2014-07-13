@@ -112,7 +112,7 @@ function createMpsParser() {
     var pRhsSection = pThen(second, pLit('RHS'), pRhsSeries);
     var pProb = pThen3(mkProb, pRowsSection, pColumnsSection, pRhsSection);
 
-    var mpsParser = window.mpsParser = {
+    window.mpsParser = {
         pRow: pRow,
         pColumn: pColumn,
         pColumns: pColumns,

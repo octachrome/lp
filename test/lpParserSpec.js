@@ -6,7 +6,7 @@ describe('lp parser', function () {
     describe('pNum', function () {
         it('should parse a list of numbers', function () {
             var toks = clex(fromArray('1.5 44 124'));
-            var parser = pOneOrMore(pNum);
+            var parser = pOneOrMore(lpParser.pNum);
             var result = parser(toks);
 
             expect(result).toEqual(fromArray([{
@@ -25,7 +25,7 @@ describe('lp parser', function () {
     describe('pExpr', function () {
         it('should parse a signed term', function () {
             var toks = clex(fromArray('-1.4x'));
-            var result = pSignedTerm(toks);
+            var result = lpParser.pSignedTerm(toks);
 
             expect(result).toEqual(fromArray([{
                 result: {
@@ -38,7 +38,7 @@ describe('lp parser', function () {
 
         it('should parse a large signed term', function () {
             var toks = clex(fromArray('+ 99 y'));
-            var result = pSignedTerm(toks);
+            var result = lpParser.pSignedTerm(toks);
 
             expect(result).toEqual(fromArray([{
                 result: {
@@ -51,7 +51,7 @@ describe('lp parser', function () {
 
         it('should parse a sequence of signed terms', function () {
             var toks = clex(fromArray('-1.4x + y - 2 z'));
-            var result = pExpr(toks);
+            var result = lpParser.pExpr(toks);
 
             // three different ways to consume one or more terms
             expect(length(result)).toBe(3);
@@ -74,7 +74,7 @@ describe('lp parser', function () {
 
         it('should parse an expression without an initial sign', function () {
             var toks = clex(fromArray('1.4x + y - 2 z'));
-            var result = pExpr(toks);
+            var result = lpParser.pExpr(toks);
 
             // three different ways to consume one or more terms
             expect(length(result)).toBe(3);
@@ -94,7 +94,7 @@ describe('lp parser', function () {
 
         it('should parse a constraint', function () {
             var toks = clex(fromArray('12 var1 - var2 >= 4'));
-            var result = pConstraint(toks);
+            var result = lpParser.pConstraint(toks);
             expect(takeFirstParse(result)).toEqual({
                 expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
                 op: '>=',
@@ -104,7 +104,7 @@ describe('lp parser', function () {
 
         it('should parse a constraint with a signed rhs', function () {
             var toks = clex(fromArray('12 var1 - var2 >= -4'));
-            var result = pConstraint(toks);
+            var result = lpParser.pConstraint(toks);
             expect(takeFirstParse(result)).toEqual({
                 expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
                 op: '>=',
@@ -114,7 +114,7 @@ describe('lp parser', function () {
 
         it('should parse a named constraint', function () {
             var toks = clex(fromArray('cons1: 12 var1 - var2 >= -4'));
-            var result = pConstraint(toks);
+            var result = lpParser.pConstraint(toks);
             expect(takeFirstParse(result)).toEqual({
                 name: 'cons1',
                 expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
@@ -128,7 +128,7 @@ describe('lp parser', function () {
                 "minimise\n\
                 12 var1 - var2"
             ));
-            var result = pObjective(toks);
+            var result = lpParser.pObjective(toks);
             expect(takeFirstParse(result)).toEqual({
                 dir: 'minimise',
                 expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}]
@@ -141,7 +141,7 @@ describe('lp parser', function () {
                 12 var1 - var2 <= -30\n\
                 c: var1 + var2 >= 3\n"
             ));
-            var result = pConstraints(toks);
+            var result = lpParser.pConstraints(toks);
             expect(takeFirstParse(result)).toEqual([{
                 expr: [{sym: 'var1', coef: 12}, {sym: 'var2', coef: -1}],
                 op: '<=',
@@ -163,7 +163,7 @@ describe('lp parser', function () {
                 b: 2z + 50y <= 100\n\
                 end\n"
             ));
-            var result = pLp(toks);
+            var result = lpParser.pLp(toks);
             expect(takeFirstParse(result)).toEqual({
                 objective: {
                     dir: 'maximise',
