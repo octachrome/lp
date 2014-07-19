@@ -13,13 +13,17 @@ function padValue(v) {
     if (v >= 0) {
         s += ' ';
     }
-    return s + v;
+    return s + v.toFixed(2);
 }
 
 function printMat(mat) {
     var s = "\n";
     for (var c = 0; c < mat.vars.length; c++) {
-        s += "  " + mat.vars[c] + " ";
+        var v = mat.vars[c];
+        s += "  " + v;
+        for (var l = v.length; l < 5; l++) {
+            s += " ";
+        }
     }
     s += "\n";
     for (var r = 0; r < mat.rows.length; r++) {
@@ -76,7 +80,7 @@ function firstInfeasibility(mat) {
                 }
             }
         }
-        if (val < 0) {
+        if (val < 0 && row < mat.rows.length - 1) {
             break;
         } else {
             row = null;
@@ -117,9 +121,10 @@ function pivotVar(mat) {
     var obj = mat.rows[mat.rows.length - 1] ;
     var min = obj[0];
     for (var i = 1; i < mat.vars.length; i++) {
+        var v = mat.vars[i];
         if (obj[i] < min) {
             p = {
-                sym: mat.vars[i],
+                sym: v,
                 col: i
             }
             min = obj[i];
@@ -170,9 +175,11 @@ function cloneMat(mat) {
 }
 
 function scaleRow(row, scale) {
+    var result = [];
     for (var i = 0; i < row.length; i++) {
-        row[i] *= scale;
+        result[i] = row[i] * scale;
     }
+    return result;
 }
 
 function addRow(dest, src) {
@@ -195,11 +202,11 @@ function pivot(mat, rowIdx, colIdx) {
         if (val === 0) {
             continue;
         }
-        scaleRow(row, -pivot / val);
-        addRow(row, pivotRow);
-        result.rhs[i] = result.rhs[i] * -pivot / val + mat.rhs[rowIdx];
+        var a = scaleRow(pivotRow, -val / pivot);
+        addRow(row, a);
+        result.rhs[i] = result.rhs[i] + mat.rhs[rowIdx] * -val / pivot;
 
-        if (result.rhs[i] < 0) {
+        if (i != mat.rows.length - 1 && result.rhs[i] < 0) {
             scaleRow(row, -1);
             result.rhs[i] = -result.rhs[i];
         }
@@ -208,8 +215,11 @@ function pivot(mat, rowIdx, colIdx) {
     return result;
 }
 
-function solve(mat) {
+function solve(mat, debug) {
     while (true) {
+        if (debug) {
+            console.log(printMat(mat));
+        }
         var pv = firstInfeasibility(mat);
         if (pv === null) {
             pv = pivotVar(mat);
@@ -218,6 +228,13 @@ function solve(mat) {
             break;
         }
         var pr = pivotRow(mat, pv);
+        if (pr === null) {
+            break;
+        }
+        if (debug) {
+            console.log(pv);
+            console.log(pr);
+        }
         mat = pivot(mat, pr, pv.col);
     }
     return mat;

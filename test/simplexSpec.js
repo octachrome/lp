@@ -1,6 +1,7 @@
 describe('simplex', function () {
     beforeEach(function () {
         createLpParser();
+        createMpsParser();
     });
 
     describe('solution', function () {
@@ -307,7 +308,7 @@ describe('simplex', function () {
 
     describe('full solve', function () {
         it('should solve a simple problem', function () {
-            var prob = readProb(
+            var prob = readLp(
                 "maximise\n\
                 7x + 5y\n\
                 subject to\n\
@@ -325,7 +326,7 @@ describe('simplex', function () {
         });
 
         it('should solve a problem which is initially infeasible', function () {
-            var prob = readProb(
+            var prob = readLp(
                 "maximise\n\
                 2x + 3y + z\n\
                 subject to\n\
@@ -345,7 +346,7 @@ describe('simplex', function () {
         });
 
         it('should solve a problem with an equality constraint', function () {
-            var prob = readProb(
+            var prob = readLp(
                 "maximise\n\
                 3x - 2y\n\
                 subject to\n\
@@ -361,6 +362,49 @@ describe('simplex', function () {
             expect(sol.x).toBe(80);
             expect(sol.y).toBe(20);
             expect(sol._obj).toBeCloseTo(200);
+        });
+
+        it('should solve a small MPS problem', function () {
+            var prob = readMps("\
+NAME          T       \n\
+ROWS\n\
+ N  nn\n\
+ G  g1      \n\
+ G  g2      \n\
+ L  l3      \n\
+ L  l4      \n\
+ G  g5      \n\
+ L  s6      \n\
+COLUMNS\n\
+    y1        nn            2.000000   g1            1.000000\n\
+    y1        g2            1.000000   l3            1.000000\n\
+    y1        l4            1.000000\n\
+    y2        nn            3.000000   g1            1.000000\n\
+    y2        g2           -1.000000   l3           -1.000000\n\
+    y2        g5            1.000000\n\
+    y3        nn           -1.000000   g1            1.000000\n\
+    y3        l4            1.000000   s6            1.000000\n\
+    y4        nn            7.000000   g1            1.000000\n\
+    y4        g5            1.000000\n\
+    y5        nn            1.000000   g1            1.000000\n\
+    y5        s6            1.000000\n\
+RHS\n\
+    RHnn0001  g1           10.000000   g2            2.000000\n\
+    RHnn0001  l3            4.000000   l4            6.000000\n\
+    RHnn0001  g5            3.000000   s6            6.000000\n\
+ENDATA\n");
+            prob.objective.dir = 'minimize';
+
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat);
+            var sol = solution(finalMat);
+
+            expect(sol.y1).toBe(5);
+            expect(sol.y2).toBe(3);
+            expect(sol.y3).toBe(1);
+            expect(sol.y4).toBe(0);
+            expect(sol.y5).toBe(1);
+            expect(sol._obj).toBe(-19);
         });
     });
 });

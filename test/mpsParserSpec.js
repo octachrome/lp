@@ -133,6 +133,93 @@ RHS\n\
                     }
                 ]
             });
+        });
+    });
+
+    describe('pHeader', function () {
+        it('should parse a problem with a single word name', function () {
+            var toks = clex(fromArray("NAME          T       \n"));
+            var result = takeFirstParse(mpsParser.pHeader(toks));
+            expect(toArray(result)).toEqual(['T']);
+        });
+    });
+
+    describe('pMps', function () {
+        it('should parse a real MPS problem', function () {
+            var toks = clex(fromArray("\
+NAME          T       \n\
+ROWS\n\
+ N  nn\n\
+ G  g1      \n\
+ G  g2      \n\
+ L  l3      \n\
+ L  l4      \n\
+ G  g5      \n\
+ L  s6      \n\
+COLUMNS\n\
+    y1        nn            2.000000   g1            1.000000\n\
+    y1        g2            1.000000   l3            1.000000\n\
+    y1        l4            1.000000\n\
+    y2        nn            3.000000   g1            1.000000\n\
+    y2        g2           -1.000000   l3           -1.000000\n\
+    y2        g5            1.000000\n\
+    y3        nn           -1.000000   g1            1.000000\n\
+    y3        l4            1.000000   s6            1.000000\n\
+    y4        nn            7.000000   g1            1.000000\n\
+    y4        g5            1.000000\n\
+    y5        nn            1.000000   g1            1.000000\n\
+    y5        s6            1.000000\n\
+RHS\n\
+    RHnn0001  g1           10.000000   g2            2.000000\n\
+    RHnn0001  l3            4.000000   l4            6.000000\n\
+    RHnn0001  g5            3.000000   s6            6.000000\n\
+ENDATA\n"));
+
+            var result = takeFirstParse(mpsParser.pMps(toks));
+            expect(result).toEqual({
+                objective: {
+                    name: 'nn',
+                    expr: [{ sym: 'y1', coef: 2 }, { sym: 'y2', coef: 3 }, { sym: 'y3', coef: -1 }, { sym: 'y4', coef: 7 }, { sym: 'y5', coef: 1 } ]
+                },
+                constraints: [
+                    {
+                        name: 'g1',
+                        op: '>=',
+                        expr: [ { sym: 'y1', coef: 1 }, { sym: 'y2', coef: 1 }, { sym: 'y3', coef: 1 }, { sym: 'y4', coef: 1 }, { sym: 'y5', coef: 1 } ],
+                        rhs: 10
+                    },
+                    {
+                        name: 'g2',
+                        op: '>=',
+                        expr: [ { sym: 'y1', coef: 1 }, { sym: 'y2', coef: -1 } ],
+                        rhs: 2
+                    },
+                    {
+                        name: 'l3',
+                        op: '<=',
+                        expr: [ { sym: 'y1', coef: 1 }, { sym: 'y2', coef: -1 } ],
+                        rhs: 4
+                    },
+                    {
+                        name: 'l4',
+                        op: '<=',
+                        expr: [ { sym: 'y1', coef: 1 }, { sym: 'y3', coef: 1 } ],
+                        rhs: 6
+                    },
+                    {
+                        name: 'g5',
+                        op: '>=',
+                        expr: [ { sym: 'y2', coef: 1 }, { sym: 'y4', coef: 1 } ],
+                        rhs: 3
+                    },
+                    {
+                        name: 's6',
+                        op: '<=',
+                        expr: [ { sym: 'y3', coef: 1 }, { sym: 'y5', coef: 1 } ],
+                        rhs: 6
+                    }
+                ]
+            });
         })
-    })
+    });
 });

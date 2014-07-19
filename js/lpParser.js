@@ -92,7 +92,7 @@ function createLpParser() {
     };
 }
 
-function readProb(str) {
+function readLp(str) {
     var toks = clex(fromArray(str));
     var result = lpParser.pLp(toks);
     return takeFirstParse(result);

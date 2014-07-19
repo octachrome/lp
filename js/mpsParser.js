@@ -112,12 +112,24 @@ function createMpsParser() {
     var pRhsSection = pThen(second, pLit('RHS'), pRhsSeries);
     var pProb = pThen3(mkProb, pRowsSection, pColumnsSection, pRhsSection);
 
+    var pAny = pSat(function () { return true; });
+    var pHeader = pThen(second, pLit('NAME'), pOneOrMore(pAny));
+    var pMps = pThen3(second, pHeader, pProb, pLit('ENDATA'));
+
     window.mpsParser = {
         pRow: pRow,
         pColumn: pColumn,
         pColumns: pColumns,
         pRhs: pRhs,
         pRhsSeries: pRhsSeries,
-        pProb: pProb
+        pProb: pProb,
+        pHeader: pHeader,
+        pMps: pMps
     };
+}
+
+function readMps(str) {
+    var toks = clex(fromArray(str));
+    var result = mpsParser.pMps(toks);
+    return takeFirstParse(result);
 }

@@ -110,3 +110,33 @@ function toMatrix(origProb) {
 
     return matrix;
 }
+
+function printProb(prob) {
+    var str = '';
+    str += prob.objective.dir + '\n';
+    str += printExpr(prob.objective.expr) + '\n';
+    str += 'subject to\n';
+    for (var i = 0; i < prob.constraints.length; i++) {
+        var c = prob.constraints[i];
+        str += printExpr(c.expr) + ' ' + c.op + ' ' + c.rhs + '\n';
+    }
+    str += 'end';
+    return str;
+}
+
+function printExpr(expr) {
+    var str = '';
+    for (var i = 0; i < expr.length; i++) {
+        var c = expr[i].coef;
+        if (i !== 0) {
+            if (c < 0) {
+                str += ' - ';
+                c = -c;
+            } else {
+                str += ' + ';
+            }
+        }
+        str += c + expr[i].sym;
+    }
+    return str;
+}
