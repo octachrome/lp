@@ -393,7 +393,7 @@ RHS\n\
     RHnn0001  l3            4.000000   l4            6.000000\n\
     RHnn0001  g5            3.000000   s6            6.000000\n\
 ENDATA\n");
-            prob.objective.dir = 'minimize';
+            prob.objective.dir = 'minimise';
 
             var mat = toMatrix(prob);
             var finalMat = solve(mat);
@@ -405,6 +405,65 @@ ENDATA\n");
             expect(sol.y4).toBe(0);
             expect(sol.y5).toBe(1);
             expect(sol._obj).toBe(-19);
+        });
+
+        it('should solve a MPS problem with bounds', function () {
+            var prob = readMps("\
+NAME          TRIMLOSS\n\
+ROWS\n\
+ N  Trimloss\n\
+ G  Demand01\n\
+ G  Demand02\n\
+ G  Demand03\n\
+COLUMNS\n\
+    x_____01  Trimloss     10.000000   Demand01      5.000000\n\
+    x_____02  Trimloss      2.000000   Demand01      4.000000\n\
+    x_____02  Demand02      1.000000\n\
+    x_____03  Demand01      4.000000   Demand03      1.000000\n\
+    x_____04  Trimloss      6.000000   Demand01      2.000000\n\
+    x_____04  Demand02      2.000000\n\
+    x_____05  Trimloss      4.000000   Demand01      2.000000\n\
+    x_____05  Demand02      1.000000   Demand03      1.000000\n\
+    x_____06  Trimloss      2.000000   Demand01      2.000000\n\
+    x_____06  Demand03      2.000000\n\
+    x_____07  Trimloss     10.000000   Demand02      3.000000\n\
+    x_____08  Trimloss      8.000000   Demand02      2.000000\n\
+    x_____08  Demand03      1.000000\n\
+    x_____09  Trimloss      6.000000   Demand02      1.000000\n\
+    x_____09  Demand03      2.000000\n\
+    x_____10  Trimloss      4.000000   Demand03      3.000000\n\
+RHS\n\
+    RHS00001  Demand01      8.000000   Demand02     13.000000\n\
+    RHS00001  Demand03     10.000000\n\
+BOUNDS\n\
+ UI BOUND001  x_____01      9.000000\n\
+ UI BOUND001  x_____02      9.000000\n\
+ UI BOUND001  x_____03      9.000000\n\
+ UI BOUND001  x_____04      9.000000\n\
+ UI BOUND001  x_____05      9.000000\n\
+ UI BOUND001  x_____06      9.000000\n\
+ UI BOUND001  x_____07      9.000000\n\
+ UI BOUND001  x_____08      9.000000\n\
+ UI BOUND001  x_____09      9.000000\n\
+ UI BOUND001  x_____10      9.000000\n\
+ENDATA\n");
+            prob.objective.dir = 'minimise';
+
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat);
+            var sol = solution(finalMat);
+
+            expect(sol.x_____01).toBe(0);
+            expect(sol.x_____02).toBe(9);
+            expect(sol.x_____03).toBe(9);
+            expect(sol.x_____04).toBe(1.5);
+            expect(sol.x_____05).toBe(1);
+            expect(sol.x_____06).toBe(0);
+            expect(sol.x_____07).toBe(0);
+            expect(sol.x_____08).toBe(0);
+            expect(sol.x_____09).toBe(0);
+            expect(sol.x_____10).toBe(0);
+            expect(sol._obj).toBeCloseTo(-31);
         });
     });
 });

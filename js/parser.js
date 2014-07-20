@@ -22,21 +22,27 @@ function pAlt(/*p1, p2, ...*/) {
     };
 }
 
-function pThen(combine, p1, p2) {
+function pThen(combine /*, p1, p2, ...*/) {
+    var args = Array.prototype.slice.apply(arguments);
     return function (tokens) {
-        var results1 = p1(tokens);
         var results = empty();
 
-        each(results1, function (r1) {
-            var results2 = p2(r1.rest);
-
-            each(results2, function (r2) {
-                results = cons({
-                    result: combine(r1.result, r2.result),
-                    rest: r2.rest
-                }, results);
+        function f(toks, idx, a) {
+            var p = args[idx];
+            var r = p(toks);
+            each(r, function (rr) {
+                var b = a.concat(rr.result);
+                if (idx === args.length - 1) {
+                    results = cons({
+                        result: combine.apply(null, b),
+                        rest: rr.rest
+                    }, results);
+                } else {
+                    f(rr.rest, idx + 1, b);
+                }
             });
-        });
+        }
+        f(tokens, 1, []);
         return results;
     };
 }

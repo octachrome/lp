@@ -53,7 +53,7 @@ function isNum(c) {
 }
 
 function isNumOrDot(c) {
-    return c[0] >= '0' && c[0] <= '9' || c[0] == '.';
+    return c[0] >= '0' && c[0] <= '9' || c[0] === '.';
 }
 
 function isAlpha(c) {
@@ -61,7 +61,7 @@ function isAlpha(c) {
 }
 
 function isIdChar(c) {
-    return isAlpha(c) || isNum(c);
+    return isAlpha(c) || isNum(c) || c === '_';
 }
 
 function partial(fn, others) {

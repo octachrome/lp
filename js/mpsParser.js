@@ -50,7 +50,7 @@ function mkNegative(sign, num) {
     return -num;
 }
 
-function mkProb(rows, columns, rhs) {
+function mkProb(rows, columns, rhs, bounds) {
     var constraintMap = {};
     each(rows, function (row) {
         row.expr = [];
@@ -79,10 +79,30 @@ function mkProb(rows, columns, rhs) {
         }
     });
 
+    if (bounds) {
+        constraints = constraints.concat(toArray(bounds));
+    }
     return {
         objective: objective,
         constraints: constraints
     };
+}
+
+function mkBound(type, name, col, val) {
+    var c = {
+        expr: [{sym: col, coef: 1}],
+        rhs: val
+    };
+
+    if (type === 'LO' || type === 'LI') {
+        c.op = '>=';
+    } else if (type === 'UP' || type === 'UI') {
+        c.op = '<=';
+    } else {
+        throw new Error('Unsupported bound type: ' + type);
+    }
+
+    return c;
 }
 
 function createMpsParser() {
@@ -106,11 +126,28 @@ function createMpsParser() {
     var pRhs = pAlt(pSingleRhs, pDoubleRhs);
     var pRhsSeries = pOneOrMoreFlatten(pRhs);
 
+    /*
+    LO    lower bound        b <= x (< +inf)
+    UP    upper bound        (0 <=) x <= b
+    FX    fixed variable     x = b
+    FR    free variable      -inf < x < +inf
+    MI    lower bound -inf   -inf < x (<= 0)
+    PL    upper bound +inf   (0 <=) x < +inf
+    BV    binary variable    x = 0 or 1
+    LI    integer variable   b <= x (< +inf)
+    UI    integer variable   (0 <=) x <= b
+    SC    semi-cont variable x = 0 or l <= x <= b
+    */
+    var pBoundType = pAlt(pLit('LO'), pLit('UP'), pLit('FX'), pLit('FR'), pLit('MI'), pLit('PL'), pLit('BV'),
+        pLit('LI'), pLit('UI'), pLit('SC'));
+    var pBound = pThen(mkBound, pBoundType, pSym, pSym, pNum);
+
     function second(a, b) { return b; }
     var pRowsSection = pThen(second, pLit('ROWS'), pOneOrMore(pRow));
     var pColumnsSection = pThen(second, pLit('COLUMNS'), pColumns);
     var pRhsSection = pThen(second, pLit('RHS'), pRhsSeries);
-    var pProb = pThen3(mkProb, pRowsSection, pColumnsSection, pRhsSection);
+    var pBoundsSection = pThen(second, pLit('BOUNDS'), pOneOrMore(pBound));
+    var pProb = pThen(mkProb, pRowsSection, pColumnsSection, pRhsSection, pMaybe(pBoundsSection));
 
     var pAny = pSat(function () { return true; });
     var pHeader = pThen(second, pLit('NAME'), pOneOrMore(pAny));

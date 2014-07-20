@@ -71,6 +71,17 @@ describe('parser', function () {
                 rest: empty()
             }]);
         });
+
+        it('should combine three parsers', function () {
+            var toks = clex(fromArray('a a b c c c'));
+            var parser = pThen(fromArgs, pOneOrMore(pLit('a')), pOneOrMore(pLit('b')), pOneOrMore(pLit('c')));
+            var result = takeFirstParse(parser(toks));
+            expect(toArray(result)).toEqual([
+                fromArray(['a', 'a']),
+                fromArray(['b']),
+                fromArray(['c', 'c', 'c'])
+            ]);
+        });
     });
 
     describe('pEmpty', function () {
