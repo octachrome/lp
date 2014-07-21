@@ -364,7 +364,7 @@ describe('simplex', function () {
             expect(sol._obj).toBeCloseTo(200);
         });
 
-        iit('should detect an unbouned problem', function () {
+        it('should detect an unbouned problem', function () {
             var prob = readLp(
                 "maximise\n\
                 3x - 2y\n\

@@ -228,6 +228,7 @@ function solve(mat, debug) {
             console.log(pv);
         }
         if (pv === null) {
+            mat.status = 'optimal';
             break;
         }
         var pr = pivotRow(mat, pv);
@@ -239,9 +240,6 @@ function solve(mat, debug) {
             break;
         }
         mat = pivot(mat, pr, pv.col);
-    }
-    if (!mat.status) {
-        mat.status = 'optimal';
     }
     return mat;
 }
