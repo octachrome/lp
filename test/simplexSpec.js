@@ -364,6 +364,21 @@ describe('simplex', function () {
             expect(sol._obj).toBeCloseTo(200);
         });
 
+        iit('should detect an unbouned problem', function () {
+            var prob = readLp(
+                "maximise\n\
+                3x - 2y\n\
+                subject to\n\
+                y <= 100\n\
+                end\n"
+            );
+
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat);
+
+            expect(finalMat.status).toBe('unbounded');
+        });
+
         it('should solve a small MPS problem', function () {
             var prob = readMps("\
 NAME          T       \n\

@@ -224,18 +224,24 @@ function solve(mat, debug) {
         if (pv === null) {
             pv = pivotVar(mat);
         }
+        if (debug) {
+            console.log(pv);
+        }
         if (pv === null) {
             break;
         }
         var pr = pivotRow(mat, pv);
-        if (pr === null) {
-            break;
-        }
         if (debug) {
-            console.log(pv);
             console.log(pr);
         }
+        if (pr === null) {
+            mat.status = 'unbounded';
+            break;
+        }
         mat = pivot(mat, pr, pv.col);
+    }
+    if (!mat.status) {
+        mat.status = 'optimal';
     }
     return mat;
 }
