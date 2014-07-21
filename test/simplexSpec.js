@@ -379,6 +379,21 @@ describe('simplex', function () {
             expect(finalMat.status).toBe('unbounded');
         });
 
+        it('should detect an infeasible problem', function () {
+            var prob = readLp(
+                "maximise x\n\
+                subject to\n\
+                x <= 10\n\
+                x >= 20\n\
+                end\n"
+            );
+
+            var mat = toMatrix(prob);
+            var finalMat = solve(mat, true);
+
+            expect(finalMat.status).toBe('infeasible');
+        });
+
         it('should solve a small MPS problem', function () {
             var prob = readMps("\
 NAME          T       \n\

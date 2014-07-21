@@ -101,7 +101,7 @@ function firstInfeasibility(mat) {
         }
 
         if (col === null) {
-            throw new Error('Failed to find a suitable pivot var for infeasible row ' + row);
+            return 'infeasible';
         }
         return {
             row: row,
@@ -229,6 +229,10 @@ function solve(mat, debug) {
         }
         if (pv === null) {
             mat.status = 'optimal';
+            break;
+        }
+        if (pv === 'infeasible') {
+            mat.status = 'infeasible';
             break;
         }
         var pr = pivotRow(mat, pv);
