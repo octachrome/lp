@@ -1,7 +1,11 @@
 describe('simplex', function () {
+    var simplex, lpParser, mpsParser, preproc;
+
     beforeEach(function () {
-        createLpParser();
-        createMpsParser();
+        lpParser = require('../js/lpParser');
+        mpsParser = require('../js/mpsParser');
+        simplex = require('../js/simplex');
+        preproc = require('../js/preproc');
     });
 
     describe('solution', function () {
@@ -22,7 +26,7 @@ describe('simplex', function () {
                 ]
             };
 
-            var sol = solution(mat);
+            var sol = simplex.solution(mat);
 
             expect(sol).toEqual({
                 'x': 0,
@@ -52,7 +56,7 @@ describe('simplex', function () {
                 ]
             };
 
-            var sol = solution(mat);
+            var sol = simplex.solution(mat);
 
             expect(sol).toEqual({
                 'x': 1.5,
@@ -82,7 +86,7 @@ describe('simplex', function () {
                 ]
             };
 
-            var sol = solution(mat);
+            var sol = simplex.solution(mat);
 
             expect(sol).toEqual({
                 'x': 0,
@@ -108,7 +112,7 @@ describe('simplex', function () {
                 rhs: []
             };
 
-            var pv = pivotVar(mat);
+            var pv = simplex.pivotVar(mat);
             expect(pv).toEqual({
                 sym: 'b',
                 col: 1
@@ -126,7 +130,7 @@ describe('simplex', function () {
                 rhs: []
             };
 
-            var pv = pivotVar(mat);
+            var pv = simplex.pivotVar(mat);
             expect(pv).toBe(null);
         });
     });
@@ -150,7 +154,7 @@ describe('simplex', function () {
                 sym: 'a',
                 col: 0
             };
-            var pr = pivotRow(mat, pv);
+            var pr = simplex.pivotRow(mat, pv);
             expect(pr).toBe(2);
         });
 
@@ -169,7 +173,7 @@ describe('simplex', function () {
                 sym: 'a',
                 col: 0
             };
-            var pr = pivotRow(mat, pv);
+            var pr = simplex.pivotRow(mat, pv);
             expect(pr).toBe(null);
         });
     });
@@ -252,12 +256,12 @@ describe('simplex', function () {
                 ]
             };
 
-            var pivoted = pivot(mat, 0, 4);
+            var pivoted = simplex.pivot(mat, 0, 4);
 
-            expect(augmentedRow(pivoted, 0)).toEqual([0,  -3,   1,   1,   3,   0,   0,   3]);
-            expect(augmentedRow(pivoted, 1)).toBeMultipleOf([12,  6,  -1,  -1,   0,   0,   0,  27]);
-            expect(augmentedRow(pivoted, 2)).toEqual([0,   1,   0, -10,   0,   2,   0,  10]);
-            expect(augmentedRow(pivoted, 3)).toBeMultipleOf([0,  -3,   4,   4,   0,   0,  15,  57]);
+            expect(simplex.augmentedRow(pivoted, 0)).toEqual([0,  -3,   1,   1,   3,   0,   0,   3]);
+            expect(simplex.augmentedRow(pivoted, 1)).toBeMultipleOf([12,  6,  -1,  -1,   0,   0,   0,  27]);
+            expect(simplex.augmentedRow(pivoted, 2)).toEqual([0,   1,   0, -10,   0,   2,   0,  10]);
+            expect(simplex.augmentedRow(pivoted, 3)).toBeMultipleOf([0,  -3,   4,   4,   0,   0,  15,  57]);
 
             for (var i = 0; i < pivoted.rhs.length; i++) {
                 var rhs = pivoted.rhs[i];
@@ -280,7 +284,7 @@ describe('simplex', function () {
                 rhs: [1, 1, 1, 1]
             };
 
-            var inf = firstInfeasibility(mat);
+            var inf = simplex.firstInfeasibility(mat);
             expect(inf).toBe(null);
         });
 
@@ -297,7 +301,7 @@ describe('simplex', function () {
                 rhs: [1, 1, 1, 1]
             };
 
-            var inf = firstInfeasibility(mat);
+            var inf = simplex.firstInfeasibility(mat);
             expect(inf).toEqual({
                 row: 1,
                 col: 2,
@@ -308,7 +312,7 @@ describe('simplex', function () {
 
     describe('full solve', function () {
         it('should solve a simple problem', function () {
-            var prob = readLp(
+            var prob = lpParser.readLp(
                 "maximise\n\
                 7x + 5y\n\
                 subject to\n\
@@ -316,9 +320,9 @@ describe('simplex', function () {
                 4x + 3y <= 240\n\
                 end\n"
             );
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat);
-            var sol = solution(finalMat);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
+            var sol = simplex.solution(finalMat);
 
             expect(sol.x).toBe(30);
             expect(sol.y).toBe(40);
@@ -326,7 +330,7 @@ describe('simplex', function () {
         });
 
         it('should solve a problem which is initially infeasible', function () {
-            var prob = readLp(
+            var prob = lpParser.readLp(
                 "maximise\n\
                 2x + 3y + z\n\
                 subject to\n\
@@ -335,9 +339,9 @@ describe('simplex', function () {
                 -y + z >= 10\n\
                 end\n"
             );
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat);
-            var sol = solution(finalMat);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
+            var sol = simplex.solution(finalMat);
 
             expect(sol.x).toBe(10);
             expect(sol.y).toBe(10);
@@ -346,7 +350,7 @@ describe('simplex', function () {
         });
 
         it('should solve a problem with an equality constraint', function () {
-            var prob = readLp(
+            var prob = lpParser.readLp(
                 "maximise\n\
                 3x - 2y\n\
                 subject to\n\
@@ -355,9 +359,9 @@ describe('simplex', function () {
                 end\n"
             );
 
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat);
-            var sol = solution(finalMat);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
+            var sol = simplex.solution(finalMat);
 
             expect(sol.x).toBe(80);
             expect(sol.y).toBe(20);
@@ -365,7 +369,7 @@ describe('simplex', function () {
         });
 
         it('should detect an unbouned problem', function () {
-            var prob = readLp(
+            var prob = lpParser.readLp(
                 "maximise\n\
                 3x - 2y\n\
                 subject to\n\
@@ -373,14 +377,14 @@ describe('simplex', function () {
                 end\n"
             );
 
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
 
             expect(finalMat.status).toBe('unbounded');
         });
 
         it('should detect an infeasible problem', function () {
-            var prob = readLp(
+            var prob = lpParser.readLp(
                 "maximise x\n\
                 subject to\n\
                 x <= 10\n\
@@ -388,14 +392,14 @@ describe('simplex', function () {
                 end\n"
             );
 
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat, true);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
 
             expect(finalMat.status).toBe('infeasible');
         });
 
         it('should solve a small MPS problem', function () {
-            var prob = readMps("\
+            var prob = mpsParser.readMps("\
 NAME          T       \n\
 ROWS\n\
  N  nn\n\
@@ -425,9 +429,9 @@ RHS\n\
 ENDATA\n");
             prob.objective.dir = 'minimise';
 
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat);
-            var sol = solution(finalMat);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
+            var sol = simplex.solution(finalMat);
 
             expect(sol.y1).toBe(5);
             expect(sol.y2).toBe(3);
@@ -438,7 +442,7 @@ ENDATA\n");
         });
 
         it('should solve a MPS problem with bounds', function () {
-            var prob = readMps("\
+            var prob = mpsParser.readMps("\
 NAME          TRIMLOSS\n\
 ROWS\n\
  N  Trimloss\n\
@@ -479,9 +483,9 @@ BOUNDS\n\
 ENDATA\n");
             prob.objective.dir = 'minimise';
 
-            var mat = toMatrix(prob);
-            var finalMat = solve(mat);
-            var sol = solution(finalMat);
+            var mat = preproc.toMatrix(prob);
+            var finalMat = simplex.solve(mat);
+            var sol = simplex.solution(finalMat);
 
             expect(sol.x_____01).toBe(0);
             expect(sol.x_____02).toBe(9);

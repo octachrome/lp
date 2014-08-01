@@ -1,4 +1,10 @@
 describe('preproc', function () {
+    var preproc;
+
+    beforeEach(function () {
+        preproc = require('../js/preproc');
+    });
+
     describe('canonical', function () {
         it('should convert a <= constraint into an equality', function () {
             var prob = {
@@ -11,7 +17,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 constraints: [
@@ -36,7 +42,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 constraints: [
@@ -61,7 +67,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 constraints: [
@@ -90,7 +96,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 constraints: [
@@ -121,7 +127,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 constraints: [
@@ -143,7 +149,7 @@ describe('preproc', function () {
                 }
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 objective: {
@@ -162,7 +168,7 @@ describe('preproc', function () {
                 }
             };
 
-            var can = canonical(prob);
+            var can = preproc.canonical(prob);
 
             expect(can).toEqual({
                 objective: {
@@ -187,7 +193,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var mat = toMatrix(prob);
+            var mat = preproc.toMatrix(prob);
 
             expect(mat.vars).toEqual(['x', 'y', '_s0']);
             expect(mat.rows).toEqual([
@@ -214,7 +220,7 @@ describe('preproc', function () {
                 ]
             };
 
-            var mat = toMatrix(prob);
+            var mat = preproc.toMatrix(prob);
 
             expect(mat.vars).toEqual(['x', 'y', '_s0', 'a', '_s1']);
             expect(mat.rows).toEqual([
@@ -232,7 +238,7 @@ describe('preproc', function () {
                 }
             };
 
-            var mat = toMatrix(prob);
+            var mat = preproc.toMatrix(prob);
 
             expect(mat.vars).toEqual(['x', 'y', '_obj']);
             expect(mat.rows).toEqual([
